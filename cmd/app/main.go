@@ -1,27 +1,27 @@
 package main
 
 import (
-	"errors"
+	"context"
 	"log"
-	"net/http"
+	"os"
+	"os/signal"
 
-	application "github.com/lulzshadowwalker/pararum/app"
+	"github.com/lulzshadowwalker/pararum/app"
 )
 
 func main() {
 	/// - [X] server setup
-	/// - [ ] graceful termination
+	/// - [X] graceful termination
 	/// - [ ]  CRUD ops
 	///		* request validation
 	/// 	* proper responses
 	/// - [ ]  auth middleware
 
-	app := application.New()
-	if err := app.Start(); err != nil {
-		if errors.Is(err, http.ErrServerClosed) {
-			log.Println("server shutdown")
-		} else {
-			log.Printf("error running the application %q\n", err)
-		}
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer cancel()
+
+	app := app.New()
+	if err := app.Start(ctx); err != nil {
+		log.Printf("error running the application %q\n", err)
 	}
 }
